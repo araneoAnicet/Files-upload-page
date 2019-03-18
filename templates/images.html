@@ -1,0 +1,19 @@
+<html>
+<head>
+<title>   Images  </title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <a href="{{ url_for('index') }}"> Upload new image </a>
+    {% for image in files %}
+    <div class="block">
+            <img src={{image}}>
+    </div>
+    {% endfor %}
+
+
+</body>
+
+</html>
+

@@ -1,0 +1,22 @@
+{% extends "bootstrap/base.html" %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Forms page</title>
+{% endblock %}
+{% block content %}
+    <div class="block">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <center><h1 class="message"> {{ message }} </h1> </center>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <form action="{{ url_for('load') }}" method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" multiple>
+            <input type="submit" value="confirm">
+        </form>
+        <a href="{{ url_for('images') }}"> see uploaded images </a>
+    </div>
+{% endblock %}
