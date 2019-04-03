@@ -9,7 +9,9 @@ app = Flask(__name__)
 
 CORS(app)
 api = Api(app)
-db = SQLAlchemy(app)
+# JWT / Bearer token 
+
+#token dostepu w jwt 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 app.secret_key = SECRET
