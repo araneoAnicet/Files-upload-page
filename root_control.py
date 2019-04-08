@@ -2,6 +2,7 @@ from objects_definitions import app
 from flask import render_template, redirect, url_for, flash, request, jsonify
 from config import UPLOAD_FOLDER, API_UPLOAD_FOLDER
 from file_management import file_upload, folder_content, folder_files, folders_check
+import jwt
 import os
 
 
@@ -28,6 +29,11 @@ def api():
 
 
 # REST
+@app.route('/api/get_token', methods=['GET'])
+def get_token():
+    headers = dict(request.headers)
+    return 'Hello!'
+
 @app.route('/api/images', methods=['POST'])
 def api_post_image():
     saved_files = [filename for filename in file_upload(API_UPLOAD_FOLDER)]
@@ -39,9 +45,9 @@ def api_post_image():
             'request_payload': {
                 'url': '/api/images',
                 'method': 'POST',
-                'headers': None
+                'headers': dict(request.headers)
             }
-        })
+        }), 200
     return jsonify({
         'message': 'No images were selected',
         'status': 404,
@@ -49,9 +55,9 @@ def api_post_image():
         'request_payload': {
             'url': '/api/images',
             'method': 'POST',
-            'headers': None
+            'headers': dict(request.headers)
         }
-    })
+    }), 404
 
 @app.route('/api/images', methods=['GET'])
 def api_get_grid():
@@ -64,9 +70,9 @@ def api_get_grid():
             'request_payload': {
                 'url': '/api/images',
                 'method': 'GET',
-                'headers': None
+                'headers': dict(request.headers)
                 }
-        })
+        }), 200
     return jsonify({
             'message': 'No images found',
             'status': 404,
@@ -74,9 +80,9 @@ def api_get_grid():
             'request_payload': {
                 'url': '/api/images',
                 'method': 'GET',
-                'headers': None
+                'headers': dict(request.headers)
                 }
-        })
+        }), 404
 
 
 @app.route('/api/images/<hash>', methods=['GET'])
@@ -89,9 +95,9 @@ def api_get_img(hash):
             'request_payload': {
                 'url': '/api/images/' + hash,
                 'method': 'GET',
-                'headers': None
+                'headers': dict(request.headers)
                 }
-        })
+        }), 200
     return jsonify({
         'message': 'Image was not found',
         'status': 404,
@@ -99,9 +105,9 @@ def api_get_img(hash):
         'request_payload': {
             'url': '/api/images/' + hash,
             'method': 'GET',
-            'headers': None
+            'headers': dict(request.headers)
             }
-    })
+    }), 404
     
 @app.route('/api/images/<hash>', methods=['DELETE'])
 def api_delete_img(hash):
@@ -114,9 +120,9 @@ def api_delete_img(hash):
             'request_payload': {
                 'url': '/api/images/' + hash,
                 'method': 'DELETE',
-                'headers': None
+                'headers': dict(request.headers)
                 }
-        })
+        }), 200
     return jsonify({
         'message': 'Image was not found',
         'status': 404,
@@ -124,10 +130,10 @@ def api_delete_img(hash):
         'request_payload': {
             'url': '/api/images' + hash,
             'method': 'DELETE',
-            'headers': None
+            'headers': dict(request.headers)
         }
-    })
+    }), 404
 
 if __name__ == '__main__':
-    folders_check([UPLOAD_FOLDER, API_UPLOAD_FOLDER])
+    folders_check([UPLOAD_FOLDER, API_UPLOAD_FOLDER])  # optional
     app.run(debug=True)
