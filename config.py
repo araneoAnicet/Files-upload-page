@@ -1,5 +1,6 @@
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'png', 'gif'])
-UPLOAD_FOLDER = 'stored_images'
-SECRET = 'H@xwaid2q8YH@IYE*(hfWI#NO:#@(S!OSjfa'
-ADMIN_TOKEN = ''
-json_structure = {message:'', statusCode: 200, data:'', requestPayload:{}}
+UPLOAD_FOLDER = 'upload_folder'
+API_UPLOAD_FOLDER = 'api_upload_folder'
+SECRET = 'forms encryption key'
+ADMIN = {'username': 'admin username', 'password': 'admin password'}
+JWT_KEY = 'jwt encryption key'
