@@ -1,10 +1,45 @@
 from objects_definitions import app
 from flask import render_template, redirect, url_for, flash, request, jsonify
-from config import UPLOAD_FOLDER, API_UPLOAD_FOLDER
+from config import UPLOAD_FOLDER, API_UPLOAD_FOLDER, ADMIN, JWT_KEY
 from file_management import file_upload, folder_content, folder_files, folders_check
 import jwt
+from datetime import datetime, timedelta
 import os
+from functools import wraps
 
+def token_req(func):
+    @wraps(func)
+    def decorator(*args, **kwargs):
+        token = request.headers['Authorization']
+        if not token:
+            return jsonify({
+            'message': 'Token is missing',
+            'status': 404,
+            'data': None,
+            'request_payload': {
+                'token': None,
+                'url': None,
+                'method': None,
+                'headers': dict(request.headers)
+            }
+        }), 404
+        try:
+            decoded_token = jwt.decode(token, JWT_KEY)
+            return func(*args, **kwargs)
+        except Exception as error:
+            print(error)
+            return jsonify({
+            'message': 'Invalid token',
+            'status': 403,
+            'data': None,
+            'request_payload': {
+                'token': token,
+                'url': None,
+                'method': None,
+                'headers': dict(request.headers)
+            }
+        }), 403
+    return decorator
 
 @app.route('/')
 def index():
@@ -29,12 +64,57 @@ def api():
 
 
 # REST
-@app.route('/api/get_token', methods=['GET'])
+@app.route('/api/get_token', methods=['GET', 'POST'])
 def get_token():
-    headers = dict(request.headers)
-    return 'Hello!'
+    user_data = request.get_json()
+    if 'username' in user_data and 'password' in user_data:
+        if user_data['username'] == ADMIN['username'] and user_data['password'] == ADMIN['password']:
+            token = jwt.encode(
+                {
+                    'username': ADMIN['username'],
+                    'is_admin': True,
+                    'exp': datetime.utcnow() + timedelta(days=1)
+                    }, JWT_KEY)
+
+            return jsonify({
+            'message': 'Authorized successfully',
+            'status': 200,
+            'data': {'token': token.decode('utf-8')},
+            'request_payload': {
+                'request': user_data,
+                'url': '/api/get_token',
+                'method': 'POST',
+                'headers': dict(request.headers)
+            }
+        }), 403
+        else:
+            return jsonify({
+            'message': 'Incorrect username or password',
+            'status': 403,
+            'data': None,
+            'request_payload': {
+                'request': user_data,
+                'url': '/api/get_token',
+                'method': 'POST',
+                'headers': dict(request.headers)
+            }
+        }), 403
+
+    return jsonify({
+            'message': 'No username or password',
+            'status': 404,
+            'data': None,
+            'request_payload': {
+                'request': user_data,
+                'url': '/api/get_token',
+                'method': 'POST',
+                'headers': dict(request.headers)
+            }
+        }), 404      
+    
 
 @app.route('/api/images', methods=['POST'])
+@token_req
 def api_post_image():
     saved_files = [filename for filename in file_upload(API_UPLOAD_FOLDER)]
     if saved_files:
@@ -110,6 +190,7 @@ def api_get_img(hash):
     }), 404
     
 @app.route('/api/images/<hash>', methods=['DELETE'])
+@token_req
 def api_delete_img(hash):
     if folder_files('static/uploads' + hash):
         os.remove('static/' + API_UPLOAD_FOLDER + '/' + hash)
